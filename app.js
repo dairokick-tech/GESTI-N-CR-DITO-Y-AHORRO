@@ -71,6 +71,88 @@ function onlineSave(){
 }
 function save(){localStorage.setItem(KEY,JSON.stringify(db));onlineSave()}
 function updateOnlineStatus(){var el=document.getElementById('onlineStatus');if(!el)return;var c=onlineConfig();if(!c.enabled){el.textContent='● Local';el.className='online-status local';return}if(ONLINE_SYNC.lastError){el.textContent='● Sin conexión';el.className='online-status error';return}if(ONLINE_SYNC.ready){el.textContent='● Online';el.className='online-status online';}else{el.textContent='● Conectando…';el.className='online-status pending'}}
+
+/* ===== PORTAL CLIENTE ===== */
+var CLIENT_PORTAL_KEY='credicontafi_client_session_v1';
+function clientSession(){
+  try{return JSON.parse(localStorage.getItem(CLIENT_PORTAL_KEY)||'null')}catch(e){return null}
+}
+function setClientSession(x){try{localStorage.setItem(CLIENT_PORTAL_KEY,JSON.stringify(x))}catch(e){}}
+function clearClientSession(){try{localStorage.removeItem(CLIENT_PORTAL_KEY)}catch(e){}}
+
+function clientPortal(){
+  var root=document.getElementById('content');
+  if(!root)return;
+  var session=clientSession();
+  var c=session?client(session.clientId):null;
+  if(!c){
+    root.innerHTML='<div class="client-portal"><div class="client-hero"><div class="client-logo">C</div><div><div class="client-kicker">CREDICONTAFI</div><h1>Portal Cliente</h1><p>Consulta tu crédito, ahorros, cuotas y pagos desde cualquier dispositivo.</p></div></div>'+
+      '<div class="client-login card"><h2>Ingresar al portal</h2><p class="sub">Busca tu registro con tu DNI o teléfono.</p><form id="clientLoginForm"><div class="field"><label>DNI o teléfono</label><input id="clientAccessCode" required inputmode="numeric" placeholder="Ingresa tu DNI o teléfono"></div><div class="field"><label>Nombre completo</label><input id="clientAccessName" required placeholder="Tal como está registrado"></div><div class="actions"><button class="btn primary" type="submit">Ingresar</button></div></form><div class="notice">🔒 El portal cliente solo muestra información propia. No contiene módulos administrativos.</div></div>'+
+      '<div class="client-features grid3"><div class="card"><b>💳 Mi Crédito</b><p>Saldo, cuotas y cronograma.</p></div><div class="card"><b>🏦 Mi Ahorro</b><p>Saldo y movimientos.</p></div><div class="card"><b>📲 Pagar cuota</b><p>QR y comprobante de pago.</p></div></div></div>';
+    var form=document.getElementById('clientLoginForm');
+    if(form)form.onsubmit=function(e){
+      e.preventDefault();
+      var code=String(document.getElementById('clientAccessCode').value||'').trim().toLowerCase();
+      var name=String(document.getElementById('clientAccessName').value||'').trim().toLowerCase();
+      var found=db.clients.find(function(x){
+        var dni=String(x.dni||'').trim().toLowerCase(),phone=String(x.phone||'').replace(/\D/g,'');
+        return (dni===code||phone===code.replace(/\D/g,'')) && String(x.name||'').trim().toLowerCase()===name;
+      });
+      if(!found){toast('No encontramos un cliente con esos datos');return}
+      setClientSession({clientId:found.id,at:new Date().toISOString()});
+      clientPortal();
+    };
+    return;
+  }
+  var credits=db.credits.filter(function(x){return x.clientId===c.id});
+  var savings=db.savingsAccounts.filter(function(x){return x.clientId===c.id});
+  var active=credits.find(function(x){return x.status==='Vigente'||x.status==='Desembolsado'||x.disbursementStatus==='Desembolsado'})||credits[0]||null;
+  if(active)ensureCreditSchedule(active);
+  var next=active?nextInstallment(active):null;
+  var pending=active?pendingForCredit(active.id):0;
+  var totalSavings=savings.reduce(function(a,x){return a+Number(x.balance||x.currentBalance||0)},0);
+  var qr=active?creditQrData(active):{number:0,date:'—',amount:0,balance:0};
+  var qrSrc=db.company&&db.company.qrImage?esc(db.company.qrImage):'';
+  var scheduleRows=active?(active.schedule||[]).map(function(r){
+    return '<tr><td>'+esc(r.n)+'</td><td>'+esc(r.date)+'</td><td>'+money(r.payment)+'</td><td>'+money(r.balance)+'</td><td><span class="pill '+(r.status==='Pagada'?'success':'')+'">'+esc(r.status||'Pendiente')+'</span></td></tr>';
+  }).join(''):'<tr><td colspan="5">No tienes cronograma registrado.</td></tr>';
+  var savingRows=savings.map(function(s){
+    var mov=(s.movements||[]).slice(-5).reverse().map(function(m){return '<tr><td>'+esc(m.date||'')+'</td><td>'+esc(m.type||'')+'</td><td>'+money(m.amount)+'</td></tr>'}).join('');
+    return '<div class="card"><h3>🏦 Cuenta '+esc(s.code||s.id||'')+'</h3><div class="client-balance">'+money(s.balance||s.currentBalance||0)+'</div><p>Estado: <b>'+esc(s.status||'Activo')+'</b></p><div class="table-wrap"><table class="table"><tr><th>Fecha</th><th>Movimiento</th><th>Monto</th></tr>'+ (mov||'<tr><td colspan="3">Sin movimientos.</td></tr>')+'</table></div></div>';
+  }).join('');
+  root.innerHTML='<div class="client-portal">'+
+    '<div class="client-top"><div><div class="client-kicker">CREDICONTAFI · PORTAL CLIENTE</div><h1>Hola, '+esc(c.name||'Cliente')+' 👋</h1><p>Consulta y gestiona tus productos financieros.</p></div><button type="button" class="btn light" id="clientLogout">Cerrar sesión</button></div>'+
+    '<div class="grid client-metrics"><div class="card metric purple"><div class="label">Saldo de crédito</div><div class="value">'+money(active?active.balance:0)+'</div></div><div class="card metric blue"><div class="label">Próxima cuota</div><div class="value">'+money(qr.amount)+'</div><small>'+esc(qr.date)+'</small></div><div class="card metric green"><div class="label">Mi ahorro</div><div class="value">'+money(totalSavings)+'</div></div><div class="card metric orange"><div class="label">Pagos pendientes de validación</div><div class="value">'+pending+'</div></div></div>'+
+    '<div class="client-actions"><button type="button" class="btn primary" id="clientPayBtn">📲 Pagar cuota</button><button type="button" class="btn light" id="clientWhatsapp">💬 Cobranza por WhatsApp</button><button type="button" class="btn light" id="clientLogout2">Salir</button></div>'+
+    '<div class="card"><div class="page-head"><div><h2>💳 Mi Crédito</h2><p class="sub">'+(active?'Crédito '+esc(active.id||'')+' · '+esc(active.type==='group'?'Grupal':'Individual'):'No tienes un crédito registrado')+'</p></div></div>'+
+      (active?'<div class="grid3"><div><b>Capital otorgado</b><br>'+money(active.amount)+'</div><div><b>Saldo pendiente</b><br>'+money(active.balance)+'</div><div><b>Estado</b><br><span class="pill success">'+esc(active.status||'Vigente')+'</span></div></div><div class="table-wrap"><table class="table"><tr><th>N.°</th><th>Vencimiento</th><th>Cuota</th><th>Saldo</th><th>Estado</th></tr>'+scheduleRows+'</table></div>':'<div class="notice">No encontramos un crédito activo asociado a tu registro.</div>')+
+    '</div>'+
+    '<div class="card"><div class="page-head"><div><h2>🏦 Mi Ahorro</h2><p class="sub">Tus cuentas de ahorro vinculadas.</p></div></div>'+(savingRows||'<div class="notice">Tu cuenta de ahorro aparecerá aquí cuando sea aperturada.</div>')+'</div>'+
+    '<div class="card"><h2>📄 Mis datos</h2><div class="grid3"><div><b>Nombre</b><br>'+esc(c.name)+'</div><div><b>DNI</b><br>'+esc(c.dni||'—')+'</div><div><b>Teléfono</b><br>'+esc(c.phone||'—')+'</div><div><b>Correo</b><br>'+esc(c.email||'—')+'</div><div><b>Dirección</b><br>'+esc(c.address||'—')+'</div><div><b>Negocio</b><br>'+esc(c.business||'—')+'</div></div></div>'+
+    '<div class="card client-docs"><h2>📁 Documentos</h2><div class="client-actions"><button class="btn light" type="button" id="clientContract">Contrato</button><button class="btn light" type="button" id="clientPromissory">Pagaré</button><button class="btn light" type="button" id="clientSchedule">Cronograma</button><button class="btn light" type="button" id="clientStatement">Estado de cuenta</button></div></div>'+
+    '</div>';
+  function logout(){clearClientSession();clientPortal()}
+  document.getElementById('clientLogout').onclick=logout;
+  document.getElementById('clientLogout2').onclick=logout;
+  document.getElementById('clientPayBtn').onclick=function(){
+    if(!active){return toast('No tienes una cuota pendiente')}
+    var payHtml='<div class="client-pay"><div class="pay-summary"><b>Cuota N.° '+esc(qr.number)+'</b><strong>'+money(qr.amount)+'</strong><span>Saldo después del pago: '+money(Math.max(0,qr.balance-qr.amount))+'</span></div>'+
+      (qrSrc?'<div class="qr-box"><img src="'+qrSrc+'" alt="QR de pago"></div>':'<div class="notice">Configura el QR de CREDICONTAFI desde el administrador.</div>')+
+      '<form id="clientProofForm"><div class="field"><label>Comprobante de pago</label><input required type="file" id="clientProof" accept="image/*,.pdf"></div><button class="btn primary" type="submit">Enviar comprobante</button></form></div>';
+    modal('Pagar cuota',payHtml);
+    var pf=document.getElementById('clientProofForm');
+    pf.onsubmit=function(e){e.preventDefault();var file=document.getElementById('clientProof').files[0];if(!file)return toast('Adjunta tu comprobante');fileToDataURL(file,function(data){db.pendingPayments.push({id:id('PP-'),clientId:c.id,creditId:active.id,installmentNumber:qr.number,amount:qr.amount,status:'Pendiente',fileName:file.name,proof:data,created:new Date().toISOString()});save();closeModal();toast('Comprobante enviado para validación')})};
+  };
+  document.getElementById('clientWhatsapp').onclick=function(){
+    var msg='Hola CREDICONTAFI, soy '+(c.name||'cliente')+'. Quiero pagar mi cuota N.° '+qr.number+' por '+money(qr.amount)+'. Saldo de mi crédito: '+money(qr.balance)+'.';
+    window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+  };
+  document.getElementById('clientContract').onclick=function(){if(active)creditDoc(active,'Contrato de préstamo')};
+  document.getElementById('clientPromissory').onclick=function(){if(active)creditDoc(active,'Pagaré')};
+  document.getElementById('clientSchedule').onclick=function(){if(active)creditDoc(active,'Cronograma de pagos')};
+  document.getElementById('clientStatement').onclick=function(){if(active)creditDoc(active,'Estado de cuenta')};
+}
+
 async function initOnline(){
   // Detectar el portal antes de cualquier consulta remota para evitar mostrar el administrador.
   var clientMode=false;
