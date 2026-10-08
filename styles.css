@@ -13,3 +13,39 @@
 .print-document{padding:12px;line-height:1.5}.print-document h2,.print-document h3{text-align:center}
 @media(max-width:700px){.operation-head,.operation-grid{grid-template-columns:1fr}.workflow-arrow{display:none}}
 @media print{body>*:not(.modal){display:none!important}.modal{position:static!important;background:#fff!important;padding:0!important}.modal.open{display:block!important}.modal-card{max-height:none!important;box-shadow:none!important;width:100%!important}.modal-head,.no-print{display:none!important}.modal-card #modalBody{padding:0!important}}
+
+/* Cronograma móvil: evitar que las primeras columnas queden fuera de pantalla */
+@media(max-width:700px){
+  .credit-operation .table-wrap{
+    width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    border-radius:8px;
+  }
+  .credit-operation .table{
+    width:max-content;
+    min-width:760px;
+    table-layout:auto;
+  }
+  .credit-operation .table th,
+  .credit-operation .table td{
+    white-space:nowrap;
+    padding:9px 10px;
+  }
+  .credit-operation .table th:first-child,
+  .credit-operation .table td:first-child{
+    min-width:55px;
+  }
+  .credit-operation .operation-section{
+    overflow:hidden;
+  }
+  .credit-operation .operation-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  .credit-operation .operation-actions .btn{
+    width:100%;
+    margin:0;
+  }
+}
