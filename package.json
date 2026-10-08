@@ -1,10 +1,50 @@
 {
-  "name":"credicontafi",
-  "version":"1.0.0",
-  "description":"CREDICONTAFI - Gestión de Créditos y Ahorros",
-  "main":"electron/main.js",
-  "scripts":{"desktop":"electron .","desktop:build":"electron-builder --win nsis","mobile:sync":"npx cap sync","mobile:android":"npx cap open android"},
-  "dependencies":{"@capacitor/core":"^8.0.0"},
-  "devDependencies":{"@capacitor/android":"^8.0.0","@capacitor/cli":"^8.0.0","electron":"^39.0.0","electron-builder":"^26.0.0"},
-  "build":{"appId":"pe.credicontafi.gestion","productName":"CREDICONTAFI","files":["index.html","cliente.html","cliente.css","cliente.js","app.js","styles.css","online-config.js","supabase-client-config.js","logo.svg","logo-credicontafi.svg","schema.sql","supabase-schema.sql","supabase-portal-cliente.sql","electron/**/*"],"directories":{"output":"dist"},"win":{"target":[{"target":"nsis","arch":["x64"]}]},"nsis":{"oneClick":false,"perMachine":false,"allowToChangeInstallationDirectory":true}}
+  "name": "credicontafi",
+  "version": "1.0.1",
+  "description": "CREDICONTAFI - Gestión de Créditos y Ahorros",
+  "main": "electron/main.js",
+  "scripts": {
+    "desktop": "electron .",
+    "desktop:build": "electron-builder --win nsis",
+    "mobile:sync": "npx cap sync",
+    "mobile:android": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "pe.credicontafi.gestion",
+    "productName": "CREDICONTAFI",
+    "files": [
+      "index.html",
+      "cliente.html",
+      "cliente.css",
+      "cliente.js",
+      "app.js",
+      "styles.css",
+      "online-config.js",
+      "supabase-client-config.js",
+      "logo.svg",
+      "logo-credicontafi.svg",
+      "schema.sql",
+      "supabase-schema.sql",
+      "supabase-portal-cliente.sql",
+      "electron/**/*"
+    ],
+    "directories": { "output": "dist" },
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
 }
