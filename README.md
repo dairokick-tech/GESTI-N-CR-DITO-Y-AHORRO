@@ -1,15 +1,43 @@
 # CREDICONTAFI PRO
 
-Versión preparada para subir a GitHub Pages.
+Versión operativa para GitHub Pages.
 
-Incluye: clientes, solicitudes, productos, evaluación de negocio, créditos individuales, soporte para créditos/grupos existentes, cronogramas, pagos, cobranza, morosidad, expedientes, juntas/fondos, inversiones, documentos, reportes, configuración y cuentas de ahorro.
+## Flujo principal
+Cliente → Solicitud → Evaluación → Aprobación → Crédito individual o grupal → Cronograma → Pagos → Cobranza → Cuenta de ahorro automática → Historial.
 
-Regla nueva: al aprobar/aperturar un crédito se crea automáticamente una cuenta de ahorro vinculada al cliente y al crédito.
+## Módulos
+- Dashboard
+- Clientes
+- Solicitudes
+- Productos de crédito y ahorro
+- Evaluación de negocio y capacidad de pago
+- Créditos individuales
+- Créditos grupales (cada integrante obtiene su crédito vinculado)
+- Ahorros automáticos por crédito
+- Pagos y comprobantes QR
+- Cobranza y WhatsApp
+- Morosidad
+- Expedientes
+- Juntas y fondos
+- Inversiones
+- Documentos
+- Reportes e historial
+- Configuración
+- Portal Cliente
+
+## Regla de ahorro automático
+Al aprobar/aperturar un crédito se crea una cuenta de ahorro vinculada al cliente y al crédito. En un crédito grupal se crea una cuenta de ahorro para cada integrante.
 
 ## Publicación
-1. Sube todos los archivos de esta carpeta al repositorio.
-2. Mantén `index.html` como página principal.
-3. Ejecuta `supabase-schema.sql` en SQL Editor de Supabase si usarás sincronización online.
-4. `online-config.js` contiene la URL y clave pública del proyecto configurado.
+Sube todos estos archivos a la raíz de GitHub Pages:
+- index.html
+- app.js
+- styles.css
+- logo-credicontafi.svg
+- online-config.js
+- supabase-schema.sql (solo para ejecutar en Supabase; no es necesario que sea público)
 
-No elimines ni reemplaces la base de datos existente sin respaldo.
+## Supabase
+La configuración usa el Project URL y la clave pública configurada en `online-config.js`. Nunca colocar una service_role key en el navegador.
+
+Antes de usar información financiera real, se recomienda migrar el almacenamiento JSON a tablas normalizadas, Supabase Auth y RLS por usuario/rol.
