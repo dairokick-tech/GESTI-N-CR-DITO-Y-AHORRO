@@ -2,16 +2,45 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0ea5e9">
-<title>CREDICONTAFI · Panel Cliente</title>
+<meta name="description" content="CREDICONTAFI · Portal Cliente">
+<title>CREDICONTAFI · Portal Cliente</title>
 <link rel="icon" href="logo.svg">
 <link rel="stylesheet" href="cliente.css">
 </head>
 <body>
-<div id="app"></div>
+<div id="app">
+  <div class="login">
+    <div class="login-card">
+      <h1>Portal Cliente</h1>
+      <p class="muted">Cargando CREDICONTAFI…</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  window.addEventListener('error',function(e){
+    var app=document.getElementById('app');
+    if(app && !window.__credicontafi_started){
+      app.innerHTML='<div class="login"><div class="login-card"><h1>No se pudo cargar el Portal Cliente</h1><p class="muted">Actualiza la página. Si el problema continúa, verifica la conexión a Internet.</p><button class="btn primary" onclick="location.reload()">Reintentar</button></div></div>';
+    }
+  });
+})();
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* Respaldo de CDN: si jsDelivr no responde, intenta unpkg. */
+if(!window.supabase){
+  document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\\/script>');
+}
+</script>
 <script src="supabase-client-config.js"></script>
+<script>
+window.__credicontafi_started=true;
+</script>
 <script src="cliente.js"></script>
 </body>
 </html>
