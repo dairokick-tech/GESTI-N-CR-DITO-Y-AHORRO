@@ -689,8 +689,8 @@ var ROLE_KEY='credicontafi_current_role_v1';
 var ROLE_DEFAULT='Propietario';
 var ROLE_PERMISSIONS={
   'Propietario':['*'],
-  'Administrador':['dashboard','clients','applications','products','evaluation','credits','disbursements','savings','groupCredits','payments','collections','delinquency','dossiers','funds','investments','documents','reports','settings'],
-  'Gerente':['dashboard','clients','applications','evaluation','credits','disbursements','savings','groupCredits','payments','collections','delinquency','dossiers','funds','investments','documents','reports'],
+  'Administrador':['dashboard','clients','applications','products','evaluation','credits','disbursements','savings','groupCredits','payments','collections','delinquency','dossiers','funds','investments','documents','finance','reports','settings'],
+  'Gerente':['dashboard','clients','applications','evaluation','credits','disbursements','savings','groupCredits','payments','collections','delinquency','dossiers','funds','investments','documents','finance','reports'],
   'Analista':['dashboard','clients','applications','evaluation','credits','groupCredits','dossiers','documents'],
   'Cajero':['dashboard','clients','credits','savings','payments','collections'],
   'Contador':['dashboard','clients','credits','savings','payments','disbursements','expenses','finance','reports','documents']
