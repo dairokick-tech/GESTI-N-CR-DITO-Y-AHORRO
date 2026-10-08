@@ -134,3 +134,94 @@ main{background:var(--bg)}
 .operation-head{background:#faf7fc;border-color:var(--line)}
 .operation-section h3{color:#3b1758}
 footer{border-top-color:var(--line)}
+
+
+/* =========================================================
+   CREDICONTAFI · MODELO FINTECH MORADO COMPLETO
+   Aplicado transversalmente a Dashboard, módulos, formularios,
+   tablas, operaciones, modales y experiencia móvil.
+   ========================================================= */
+:root{
+ --yf:#7427c7;--yf2:#8d3cdb;--yf3:#a94ee5;--deep:#2a1245;
+ --bg:#f7f5fa;--surface:#fff;--surface2:#fbf9fd;
+ --text:#281b35;--muted:#786d84;--line:#e8e1ee;
+ --success:#16a06d;--warning:#e4a21a;--danger:#d94f67;
+ --shadow:0 6px 22px rgba(57,22,86,.075);--shadow2:0 14px 40px rgba(57,22,86,.13);
+ --radius:15px;
+}
+html{background:var(--bg);scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.topbar{height:70px;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 2px 12px rgba(50,20,75,.05);padding:8px 22px}
+.brand{min-width:350px;gap:12px}.brand img{width:290px;height:54px}.slogan{color:var(--yf);font-size:12px}
+.topinfo{font-size:12px;color:var(--muted);gap:12px}.topinfo b{color:var(--deep);background:#f1e9f8;border:1px solid #e8daf2;padding:8px 12px;border-radius:10px}
+.menu{background:var(--yf);border-radius:10px}
+.shell{min-height:calc(100vh - 110px)}
+aside{width:252px;background:linear-gradient(180deg,#35135c 0%,#25103d 100%);border:0;padding:15px 11px;box-shadow:5px 0 20px rgba(39,14,59,.09)}
+.menu-title{color:#bca6cd;letter-spacing:.08em;font-size:10px;padding:9px 12px}
+.nav{color:#e9ddf0;border-radius:10px;padding:10px 12px;font-size:13px;transition:.16s}
+.nav:hover{background:#4a2070;color:#fff}.nav.active{background:linear-gradient(135deg,var(--yf),var(--yf3));color:#fff;box-shadow:0 7px 18px rgba(116,39,199,.28)}
+.side-logo{border-top:1px solid rgba(255,255,255,.13);padding:14px 8px}.side-logo img{filter:brightness(0) invert(1);opacity:.92}
+main{padding:25px 28px;background:var(--bg)}
+.page-head{margin-bottom:20px}.page-title{font-size:25px;font-weight:800;color:var(--deep);letter-spacing:-.025em}.sub{color:var(--muted);font-size:13px}
+.grid,.grid3{gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.section-head h3{color:var(--deep);font-size:16px}.section-head{margin-bottom:14px}
+.metric{border-top:0!important;position:relative;overflow:hidden}.metric:after{background:#f1e8f8;width:95px;height:95px}
+.metric .label{font-size:11px;text-transform:uppercase;letter-spacing:.045em;font-weight:800;color:var(--muted)}
+.metric .value{font-size:27px;color:var(--deep);position:relative;z-index:1}
+.metric.blue,.metric.cyan{border-left:4px solid var(--yf)}.metric.green{border-left:4px solid var(--success)}
+.metric.orange{border-left:4px solid var(--warning)}.metric.red{border-left:4px solid var(--danger)}.metric.purple{border-left:4px solid var(--yf2)}
+.btn{border-radius:9px;padding:9px 13px;font-size:12px;font-weight:750;transition:.15s;box-shadow:none}
+.btn:hover{transform:translateY(-1px);filter:brightness(.98)}
+.primary{background:var(--yf);color:#fff}.success{background:var(--success);color:#fff}.danger{background:var(--danger);color:#fff}
+.light{background:#f0eaf5;color:#4b2861}.purple{background:var(--yf2);color:#fff}
+.actions{gap:7px}.actions .btn{min-height:35px}
+.table-wrap{border-radius:11px}.table{font-size:12px}.table th{background:#f6f1f9;color:#5b446c;font-size:10px;text-transform:uppercase;letter-spacing:.035em;padding:11px 10px;border-bottom:1px solid var(--line)}
+.table td{padding:11px 10px;border-bottom:1px solid #f0ebf3}.table tr:hover td{background:#fcfaff}
+.form-grid{gap:13px}.field{gap:6px}.field label{color:#5e4c6a;font-size:11px;font-weight:800}
+.field input,.field select,.field textarea{border:1px solid #d9cedf;border-radius:9px;background:#fff;color:var(--text);padding:10px 11px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:0;border-color:#9a54d2;box-shadow:0 0 0 3px #f0e5f8}
+.calc{background:#f7effc;border-color:#dec5ee}.calc strong{color:var(--yf)}
+.pill{background:#eee4f6;color:#6c2a9f;border:1px solid #e2d2ed}
+.notice{background:#f7f0fb;border-left:4px solid var(--yf)}
+.modal{background:rgba(32,11,51,.62);backdrop-filter:blur(3px)}
+.modal-card{border-radius:16px;box-shadow:var(--shadow2);border:1px solid rgba(255,255,255,.7)}
+.modal-head{padding:16px 19px;border-bottom:1px solid var(--line)}.modal-head h3{color:var(--deep);font-size:16px}
+.modal-head button{background:#f1ebf5;color:#56366b}.modal-card #modalBody{padding:19px}
+#toast{background:var(--deep);box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.credit-workflow{border:1px solid var(--line);border-radius:12px;background:#fbf9fd;padding:10px}
+.workflow-step{background:#eee8f3;color:#75627f}.workflow-step.active{background:#f0e1f9;color:var(--yf)}
+.operation-head{background:#faf7fc;border:1px solid var(--line)}.operation-section{border-color:var(--line);box-shadow:0 3px 12px rgba(57,22,86,.04)}
+.operation-section h3{color:var(--deep)}
+.credit-disb.ok{color:var(--success)}.credit-disb.pending{color:#ad7410}
+footer{background:#fff;border-top:1px solid var(--line);color:#7d7087}
+
+/* Tarjetas y estados de los módulos financieros */
+.status-active,.status-approved,.status-paid,.status-disbursed{color:var(--success);background:#e8f7f0;border-radius:999px;padding:4px 9px;font-weight:750}
+.status-pending{color:#a56d0d;background:#fff5dc;border-radius:999px;padding:4px 9px;font-weight:750}
+.status-overdue,.status-cancelled{color:var(--danger);background:#fdecef;border-radius:999px;padding:4px 9px;font-weight:750}
+
+/* Encabezados, bloques de acciones y botones generados dinámicamente */
+.page-head .actions,.section-head .actions{display:flex;align-items:center;flex-wrap:wrap}
+button[data-action]{font-family:inherit}
+button[data-action="new-disbursement"],button[data-action="pay"]{font-weight:800}
+[data-view="dashboard"]{}
+hr{border:0;border-top:1px solid var(--line)}
+a{color:var(--yf)}
+::selection{background:#ead8f7;color:var(--deep)}
+
+/* Móvil: apariencia de app financiera */
+@media(max-width:900px){
+ .brand{min-width:0}.brand img{width:250px}main{padding:20px}
+ .grid,.grid3{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:700px){
+ .topbar{height:64px;padding:7px 10px}.brand img{width:205px;height:48px}.slogan,.topinfo{display:none}
+ aside{top:64px;width:255px}
+ main{padding:14px 11px}.page-title{font-size:21px}.card{padding:14px}
+ .grid,.grid3,.form-grid{grid-template-columns:1fr}.metric .value{font-size:24px}
+ .page-head{align-items:flex-start;flex-direction:column}.page-head .actions{width:100%}.page-head .actions .btn{flex:1}
+ .section-head{align-items:flex-start;flex-direction:column}
+ .operation-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .operation-actions .btn{width:100%;margin:0}
+}
