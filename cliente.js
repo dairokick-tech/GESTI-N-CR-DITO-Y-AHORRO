@@ -45,7 +45,7 @@ async function doLogin(e){
 async function doSignup(e){
  e.preventDefault();msg('Validando datos y creando cuenta...');
  const f=Object.fromEntries(new FormData(e.target));
- const {error}=await supabase.auth.signUp({email:f.email.trim(),password:f.password,options:{data:{dni:f.dni.trim(),full_name:f.full_name.trim()}}});
+ const {error}=await supabase.auth.signUp({email:f.email.trim(),password:f.password,options:{data:{dni:f.dni.trim(),full_name:f.full_name.trim()},emailRedirectTo:location.origin+location.pathname}});
  if(error){msg(error.message||'No se pudo crear la cuenta.');return}
  const {data}=await supabase.auth.getSession();
  if(!data.session){msg('Cuenta creada. Revisa tu correo para confirmar la cuenta y luego ingresa.');return}
