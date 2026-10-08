@@ -67,7 +67,7 @@ async function onlineLoad(){
     return merged;
   }catch(e){ONLINE_SYNC.lastError=e.message||'Error de conexión';return null}
 }
-var onlineSaveTimernull;
+var onlineSaveTimer=null;
 function onlineSave(){
   var c=onlineConfig();
   if(!c.enabled||!c.url||!c.anonKey)return;
