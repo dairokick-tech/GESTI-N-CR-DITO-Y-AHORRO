@@ -49,3 +49,50 @@
     margin:0;
   }
 }
+
+
+/* ===== CREDICONTAFI · Rediseño profesional fintech 2026 ===== */
+:root{
+  --navy:#0b2545;--navy2:#123b63;--blue:#0878c9;--cyan:#12a8e8;
+  --bg:#f4f7fa;--surface:#ffffff;--line:#e3eaf1;--text:#17324d;--muted:#71859a;
+  --shadow:0 8px 24px rgba(20,55,85,.07);--radius:14px;
+}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text)}
+.topbar{height:72px;padding:8px 22px;background:rgba(255,255,255,.97);border-bottom:1px solid var(--line);box-shadow:0 2px 12px rgba(18,59,99,.05)}
+.brand{min-width:360px;gap:12px}.brand img{width:300px;height:55px}.slogan{font-size:12px;color:var(--blue)}
+.topinfo{gap:18px;color:var(--muted);font-size:12px}.topinfo b{color:var(--navy);background:#eef5fb;padding:8px 11px;border-radius:10px}
+.menu{background:var(--navy)}
+.shell{min-height:calc(100vh - 112px)}
+aside{width:250px;background:var(--navy);border:0;padding:16px 11px;gap:4px;box-shadow:4px 0 18px rgba(11,37,69,.08)}
+.menu-title{color:#8eabc5;font-size:10px;letter-spacing:.08em;padding:8px 12px 10px}
+.nav{color:#d8e6f2;padding:10px 12px;border-radius:10px;font-size:13px;transition:.18s}
+.nav:hover{background:#163f66;color:#fff}.nav.active{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;box-shadow:0 5px 14px rgba(18,168,232,.2)}
+.side-logo{border-top:1px solid rgba(255,255,255,.12);padding:13px 8px}.side-logo img{filter:brightness(0) invert(1);opacity:.9}
+main{padding:25px 28px}
+.page-head{margin-bottom:20px}.page-title{font-size:25px;font-weight:800;letter-spacing:-.02em;color:var(--navy)}.sub{font-size:13px;color:var(--muted)}
+.grid,.grid3{gap:16px}
+.card{border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+.metric{position:relative;overflow:hidden}.metric:after{content:"";position:absolute;right:-25px;top:-30px;width:90px;height:90px;border-radius:50%;background:#eaf5fc}
+.metric .label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}.metric .value{font-size:27px;color:var(--navy);position:relative;z-index:1}
+.metric.blue,.metric.green,.metric.orange,.metric.red,.metric.purple,.metric.cyan{border-top:0}.metric.blue{border-left:4px solid var(--blue)}.metric.cyan{border-left:4px solid var(--cyan)}
+.metric.green{border-left:4px solid #18a878}.metric.orange{border-left:4px solid #e9a21b}.metric.red{border-left:4px solid #e05252}.metric.purple{border-left:4px solid #7657c9}
+.section-head{margin-bottom:14px}.section-head h3{font-size:16px;color:var(--navy)}
+.btn{border-radius:9px;padding:9px 13px;font-size:12px;box-shadow:none;transition:.15s}.btn:hover{transform:translateY(-1px);filter:brightness(.98)}
+.primary{background:var(--blue)}.success{background:#159a70}.danger{background:#d94b4b}.light{background:#edf3f7;color:#214762}.purple{background:#7054c5}
+.table{font-size:12px}.table th,.table td{padding:11px 10px;border-bottom:1px solid #edf1f5}.table th{background:#f5f8fb;color:#49677f;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+.table tr:hover td{background:#fbfdff}
+.field input,.field select,.field textarea{border-color:#d5e0e8;border-radius:9px;padding:10px 11px}.field input:focus,.field select:focus,.field textarea:focus{outline:0;border-color:#59b9e8;box-shadow:0 0 0 3px #e7f6fd}
+.pill{background:#e6f7ef;color:#13835e}.notice{background:#eef8fd;border-left-color:var(--blue)}
+.modal{background:rgba(5,25,45,.58);backdrop-filter:blur(3px)}.modal-card{border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.2)}.modal-head{padding:16px 19px}.modal-head h3{font-size:16px;color:var(--navy)}
+#toast{background:var(--navy);box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.credit-workflow{border:1px solid var(--line);border-radius:12px;padding:10px}.workflow-step.active{background:#e5f5fd;color:var(--blue)}
+.operation-section{border-color:var(--line);box-shadow:0 2px 10px rgba(20,55,85,.035)}.operation-head{background:#f5f9fc;border:1px solid #e5edf3}
+.operation-section h3{color:var(--navy)}
+footer{height:40px;background:#fff;border-top:1px solid var(--line);color:#7b8fa0}
+@media(max-width:900px){.brand img{width:260px}.brand{min-width:0}main{padding:20px}}
+@media(max-width:700px){
+  .topbar{height:64px}.brand img{width:205px;height:48px}.topinfo{display:none}
+  aside{top:64px;bottom:40px;width:255px}
+  main{padding:15px 12px}.page-title{font-size:21px}
+  .card{padding:14px}.metric .value{font-size:24px}
+}
