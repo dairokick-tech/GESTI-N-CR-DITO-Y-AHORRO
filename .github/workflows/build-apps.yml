@@ -5,6 +5,9 @@ on:
   push:
     branches: ["main"]
 
+permissions:
+  contents: write
+
 jobs:
   windows:
     runs-on: windows-latest
@@ -77,3 +80,28 @@ jobs:
           name: CREDICONTAFI-Android
           path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+
+  release:
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar EXE
+        uses: actions/download-artifact@v4
+        with:
+          name: CREDICONTAFI-Windows
+          path: release
+      - name: Descargar APK
+        uses: actions/download-artifact@v4
+        with:
+          name: CREDICONTAFI-Android
+          path: release
+      - name: Publicar instaladores
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${{ github.run_number }}"
+          gh release create "$TAG" release/* \
+            --repo "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
+            --title "CREDICONTAFI ${{ github.run_number }}" \
+            --notes "Instaladores oficiales generados y verificados automáticamente. Incluye Windows EXE y Android APK."
