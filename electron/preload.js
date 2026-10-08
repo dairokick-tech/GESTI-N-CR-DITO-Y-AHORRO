@@ -1,0 +1,1 @@
+const {contextBridge}=require("electron");contextBridge.exposeInMainWorld("CREDICONTAFI_DESKTOP",{installed:true,platform:process.platform,version:process.versions.electron});
