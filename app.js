@@ -541,6 +541,112 @@ function action(a,ref){if(a==='qr-pay')return qrPaymentModal(ref);if(a==='view-p
   var oldRender=render;
   render=function(view){if(view==='documents'){document.querySelectorAll('.nav').forEach(function(n){n.classList.toggle('active',n.dataset.view===view)});document.getElementById('content').innerHTML=documentsView();document.getElementById('sidebar').classList.remove('open');wire(view);return}return oldRender(view)};
 })();
+
+/* ===== CONTROL DE ACCESO · USUARIOS Y ROLES ===== */
+var ROLE_KEY='credicontafi_current_role_v1';
+var ROLE_DEFAULT='Propietario';
+var ROLE_PERMISSIONS={
+  'Propietario':['*'],
+  'Administrador':['dashboard','clients','applications','products','evaluation','credits','disbursements','savings','groupCredits','payments','collections','delinquency','dossiers','funds','investments','documents','reports','settings'],
+  'Gerente':['dashboard','clients','applications','evaluation','credits','disbursements','savings','groupCredits','payments','collections','delinquency','dossiers','funds','investments','documents','reports'],
+  'Analista':['dashboard','clients','applications','evaluation','credits','groupCredits','dossiers','documents'],
+  'Cajero':['dashboard','clients','credits','savings','payments','collections'],
+  'Contador':['dashboard','clients','credits','savings','payments','disbursements','expenses','reports','documents']
+};
+function roleLoad(){try{return localStorage.getItem(ROLE_KEY)||ROLE_DEFAULT}catch(e){return ROLE_DEFAULT}}
+var currentRole=roleLoad();
+function roleAllowed(view){return currentRole==='Propietario'||(ROLE_PERMISSIONS[currentRole]||[]).indexOf(view)>=0}
+function roleForAction(a){
+ var map={
+  'new-client':'clients','client-edit':'clients','client-view':'clients','public-request':'applications','approve':'applications',
+  'new-disbursement':'disbursements','credit-operation':'credits','pay':'payments','schedule':'credits',
+  'new-savings':'savings','savings-move':'savings','savings-statement':'savings','qr-pay':'payments',
+  'whatsapp':'collections','approve-proof':'payments','observe-proof':'payments','view-proof':'payments','share-proof':'payments',
+  'new-product':'products','edit-product':'products','new-group-credit':'groupCredits','group-view':'groupCredits','group-add-member':'groupCredits',
+  'new-junta':'funds','new-member':'funds','new-contribution':'funds','new-investment':'investments','new-withdrawal':'funds',
+  'backup':'settings','csv':'reports'
+ };
+ return map[a]||null;
+}
+function roleGuardAction(a,ref){
+ var view=roleForAction(a);
+ if(view&&!roleAllowed(view)){toast('Tu perfil '+currentRole+' no tiene permiso para esta operación');return false}
+ return true;
+}
+function usersView(){
+ var users=db.users||[];
+ var roleRows=Object.keys(ROLE_PERMISSIONS).filter(function(r){return r!=='Propietario'}).map(function(r){
+   return '<tr><td><b>'+esc(r)+'</b></td><td>'+ROLE_PERMISSIONS[r].map(function(v){return '<span class="pill">'+esc(v)+'</span>'}).join(' ')+'</td><td>'+users.filter(function(u){return u.role===r}).length+'</td></tr>';
+ }).join('');
+ var userRows=users.map(function(u){
+   return '<tr><td>'+esc(u.name)+'</td><td>'+esc(u.username)+'</td><td><span class="pill">'+esc(u.role)+'</span></td><td>'+esc(u.active===false?'Inactivo':'Activo')+'</td><td>'+btn('Cambiar perfil','light','change-user-role','data-id="'+u.id+'"')+' '+btn('Activar/Desactivar',u.active===false?'success':'danger','toggle-user','data-id="'+u.id+'"')+'</td></tr>';
+ }).join('');
+ return '<div class="page-head"><div><h1 class="page-title">Usuarios y Roles</h1><p class="sub">Administra quién puede entrar al sistema y qué módulos puede utilizar.</p></div>'+btn('+ Agregar usuario','primary','new-user')+'</div>'+
+ '<div class="card"><div class="notice">🔐 <b>Propietario:</b> acceso total a todos los módulos y operaciones. Los demás perfiles solo ven y ejecutan las funciones autorizadas.</div></div>'+
+ '<div class="grid"><div class="card metric purple"><div class="label">Usuarios</div><div class="value">'+users.length+'</div></div><div class="card metric blue"><div class="label">Perfil actual</div><div class="value" style="font-size:19px">'+esc(currentRole)+'</div></div><div class="card metric green"><div class="label">Roles disponibles</div><div class="value">'+Object.keys(ROLE_PERMISSIONS).length+'</div></div></div>'+
+ '<div class="card"><h3>Usuarios registrados</h3><div class="table-wrap"><table class="table"><tr><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr>'+userRows+'</table></div></div>'+
+ '<div class="card"><h3>Permisos por rol</h3><div class="table-wrap"><table class="table"><tr><th>Rol</th><th>Módulos autorizados</th><th>Usuarios</th></tr><tr><td><b>Propietario</b></td><td><span class="pill">TODOS</span></td><td>1</td></tr>'+roleRows+'</table></div></div>';
+}
+function userForm(existing){
+ existing=existing||{};
+ return '<form id="userForm"><div class="form-grid"><div class="field"><label>Nombre completo</label><input required name="name" value="'+esc(existing.name||'')+'"></div><div class="field"><label>Usuario</label><input required name="username" autocomplete="off" value="'+esc(existing.username||'')+'"></div><div class="field"><label>Contraseña</label><input '+(existing.id?'':'required')+' type="password" name="password" autocomplete="new-password" placeholder="'+(existing.id?'Dejar vacío para conservar':'Crear contraseña')+'"></div><div class="field"><label>Rol</label><select required name="role">'+['Administrador','Analista','Cajero','Gerente','Contador'].map(function(r){return '<option '+(existing.role===r?'selected':'')+'>'+r+'</option>'}).join('')+'</select></div><div class="field full"><label><input type="checkbox" name="active" '+(existing.active!==false?'checked':'')+'> Usuario activo</label></div><div class="full actions"><button class="btn primary">Guardar usuario</button></div></div></form>';
+}
+function usersAction(a,ref){
+ if(a==='new-user'||a==='change-user-role'){
+   var existing=a==='change-user-role'?(db.users||[]).find(function(u){return u.id===ref}):null;
+   if(a==='change-user-role'&&!existing)return;
+   modal(existing?'Editar usuario':'Agregar usuario',userForm(existing));
+   var f=document.getElementById('userForm');f.onsubmit=function(e){
+     e.preventDefault();var fd=new FormData(f),name=String(fd.get('name')||'').trim(),username=String(fd.get('username')||'').trim();
+     if(!name||!username)return toast('Completa los datos obligatorios');
+     var duplicate=(db.users||[]).some(function(u){return u.username.toLowerCase()===username.toLowerCase()&&(!existing||u.id!==existing.id)});
+     if(duplicate)return toast('Ese usuario ya existe');
+     var role=String(fd.get('role')),active=fd.get('active')==='on',pass=String(fd.get('password')||'');
+     if(existing){existing.name=name;existing.username=username;existing.role=role;existing.active=active;if(pass)existing.password=pass}
+     else{db.users.push({id:id('USR-'),name:name,username:username,password:pass,role:role,active:active,created:new Date().toISOString()})}
+     save();closeModal();render('users');toast('Usuario guardado correctamente');
+   };return;
+ }
+ if(a==='toggle-user'){
+   var u=(db.users||[]).find(function(x){return x.id===ref});if(!u)return;u.active=u.active===false;save();render('users');toast('Estado actualizado');return;
+ }
+}
+var _renderWithRoles=render;
+render=function(view){
+ if(!roleAllowed(view)&&view!=='users'){toast('Tu perfil '+currentRole+' no tiene acceso a este módulo');return render('dashboard')}
+ if(view==='users'&&currentRole!=='Propietario'&&currentRole!=='Administrador'){toast('Solo Propietario y Administrador pueden administrar usuarios');return render('dashboard')}
+ if(view==='users'){
+   document.querySelectorAll('.nav').forEach(function(n){n.classList.toggle('active',n.dataset.view===view);n.style.display=(n.dataset.view==='users'&&(currentRole==='Propietario'||currentRole==='Administrador'))?'flex':(n.dataset.view==='users'?'none':'')});
+   document.getElementById('content').innerHTML=usersView();document.getElementById('sidebar').classList.remove('open');wire('users');return;
+ }
+ _renderWithRoles(view);
+ applyRoleNavigation();
+};
+function applyRoleNavigation(){
+ document.querySelectorAll('.nav').forEach(function(n){
+   var v=n.dataset.view;
+   n.style.display=(v==='users'?(currentRole==='Propietario'||currentRole==='Administrador'):roleAllowed(v))?'flex':'none';
+ });
+ var b=document.querySelector('.topinfo b');if(b)b.textContent='👤 '+currentRole;
+}
+var _actionWithRoles=action;
+action=function(a,ref){
+ if(!roleGuardAction(a,ref))return;
+ if(a==='new-user'||a==='change-user-role'||a==='toggle-user')return usersAction(a,ref);
+ return _actionWithRoles(a,ref);
+};
+if(!db.users){
+ db.users=[];
+ save();
+}
+if(!db.users.some(function(u){return u.role==='Administrador'}))db.users.push({id:id('USR-'),name:'Administrador principal',username:'admin',password:'',role:'Administrador',active:true,created:new Date().toISOString()});
+if(!db.users.some(function(u){return u.role==='Gerente'}))db.users.push({id:id('USR-'),name:'Gerente',username:'gerente',password:'',role:'Gerente',active:true,created:new Date().toISOString()});
+if(!db.users.some(function(u){return u.role==='Analista'}))db.users.push({id:id('USR-'),name:'Analista',username:'analista',password:'',role:'Analista',active:true,created:new Date().toISOString()});
+if(!db.users.some(function(u){return u.role==='Cajero'}))db.users.push({id:id('USR-'),name:'Cajero',username:'cajero',password:'',role:'Cajero',active:true,created:new Date().toISOString()});
+if(!db.users.some(function(u){return u.role==='Contador'}))db.users.push({id:id('USR-'),name:'Contador',username:'contador',password:'',role:'Contador',active:true,created:new Date().toISOString()});
+save();
+applyRoleNavigation();
+
 function download(data,name,type){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:type}));a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},500)}
 document.getElementById('modalClose').onclick=closeModal;document.getElementById('modal').onclick=function(e){if(e.target.id==='modal')closeModal()};document.getElementById('menuBtn').onclick=function(){document.getElementById('sidebar').classList.toggle('open')};
 function tick(){var d=new Date();document.getElementById('date').textContent=d.toLocaleDateString('es-PE',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});document.getElementById('clock').textContent=d.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'})}tick();setInterval(tick,30000);initOnline();
