@@ -1,5 +1,15 @@
-# CREDICONTAFI V13 — Pagos automáticos
+# CREDICONTAFI PRO
 
-Actualización del módulo Pagos: al seleccionar un cliente y su crédito vigente, el sistema carga automáticamente cliente, DNI, producto, monto, plazo, tasa, número de cuota, cuota a pagar, vencimiento, total pagado y saldo estimado. El monto de la cuota se propone automáticamente.
+Versión preparada para subir a GitHub Pages.
 
-Mantiene la estructura independiente del proyecto y los módulos anteriores.
+Incluye: clientes, solicitudes, productos, evaluación de negocio, créditos individuales, soporte para créditos/grupos existentes, cronogramas, pagos, cobranza, morosidad, expedientes, juntas/fondos, inversiones, documentos, reportes, configuración y cuentas de ahorro.
+
+Regla nueva: al aprobar/aperturar un crédito se crea automáticamente una cuenta de ahorro vinculada al cliente y al crédito.
+
+## Publicación
+1. Sube todos los archivos de esta carpeta al repositorio.
+2. Mantén `index.html` como página principal.
+3. Ejecuta `supabase-schema.sql` en SQL Editor de Supabase si usarás sincronización online.
+4. `online-config.js` contiene la URL y clave pública del proyecto configurado.
+
+No elimines ni reemplaces la base de datos existente sin respaldo.
