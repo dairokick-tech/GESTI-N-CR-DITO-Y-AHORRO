@@ -195,5 +195,5 @@ $$;
 revoke all on public.client_accounts from anon;
 revoke all on public.client_accounts from authenticated;
 
-grant execute on function public.get_client_portal() to authenticated;
+revoke execute on function public.get_client_portal() from public, anon;\nrevoke execute on function public.submit_client_credit_request(text,numeric,integer,text,text) from public, anon;\ngrant execute on function public.get_client_portal() to authenticated;
 grant execute on function public.submit_client_credit_request(text,numeric,integer,text,text) to authenticated;
