@@ -96,3 +96,41 @@ footer{height:40px;background:#fff;border-top:1px solid var(--line);color:#7b8fa
   main{padding:15px 12px}.page-title{font-size:21px}
   .card{padding:14px}.metric .value{font-size:24px}
 }
+
+
+/* ===== CREDICONTAFI · Identidad visual inspirada en fintech morado ===== */
+:root{
+ --navy:#24103f;--navy2:#32145c;--blue:#6f2dbd;--cyan:#8b3fd1;
+ --bg:#f7f5fa;--surface:#fff;--line:#e9e3f0;--text:#29183b;--muted:#776b83;
+ --shadow:0 8px 24px rgba(71,30,105,.08);--radius:14px;
+}
+body{background:var(--bg);color:var(--text)}
+.topbar{background:#fff;border-bottom-color:var(--line)}
+.slogan{color:#742bc1}.topinfo b{color:#432064;background:#f2eafa}
+.menu{background:#742bc1}
+aside{background:linear-gradient(180deg,#32145c 0%,#24103f 100%)}
+.menu-title{color:#bda9d0}
+.nav{color:#eadff2}.nav:hover{background:#482078;color:#fff}
+.nav.active{background:linear-gradient(135deg,#7b2fc4,#a247df);box-shadow:0 6px 18px rgba(123,47,196,.28)}
+.side-logo{border-top-color:rgba(255,255,255,.14)}
+main{background:var(--bg)}
+.page-title{color:#2d1248}
+.card{border-color:var(--line);box-shadow:var(--shadow)}
+.metric .value{color:#6d27b3}
+.metric:after{background:#f1e8f8}
+.metric.blue{border-left-color:#742bc1}.metric.cyan{border-left-color:#9a45d6}
+.metric.green{border-left-color:#20a36f}.metric.orange{border-left-color:#e5a22a}.metric.red{border-left-color:#d95165}.metric.purple{border-left-color:#7b3fc0}
+.primary{background:#742bc1}.purple{background:#7130ad}
+.table th{background:#f5eff9;color:#563b6d}
+.table tr:hover td{background:#fcfaff}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#9a55d0;box-shadow:0 0 0 3px #f0e5f8}
+.pill{background:#eee3f7;color:#6b27a5}
+.notice{background:#f6effb;border-left-color:#742bc1}
+.modal{background:rgba(34,12,54,.58)}
+.modal-head h3{color:#32145c}
+#toast{background:#32145c}
+.credit-workflow{background:#fbf9fd;border-color:var(--line)}
+.workflow-step.active{background:#f0e3f9;color:#7028b4}
+.operation-head{background:#faf7fc;border-color:var(--line)}
+.operation-section h3{color:#3b1758}
+footer{border-top-color:var(--line)}
