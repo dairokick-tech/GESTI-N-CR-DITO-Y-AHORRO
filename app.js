@@ -77,6 +77,31 @@ var CLIENT_PORTAL_KEY='credicontafi_client_session_v1';
 function clientSession(){
   try{return JSON.parse(localStorage.getItem(CLIENT_PORTAL_KEY)||'null')}catch(e){return null}
 }
+async function portalFindClient(code,name){
+  code=String(code||'').trim(); name=String(name||'').trim().toLowerCase();
+  var digits=code.replace(/\\D/g,'');
+  var found=db.clients.find(function(x){
+    var dni=String(x.dni||'').trim();
+    var phone=String(x.phone||'').replace(/\\D/g,'');
+    return ((dni===code)||(digits&&phone===digits)) && String(x.name||'').trim().toLowerCase()===name;
+  });
+  if(found)return found;
+  try{
+    var cfg=onlineConfig();
+    if(cfg.enabled&&cfg.url&&cfg.anonKey){
+      var base=String(cfg.url).replace(/\\/$/,'')+'/rest/v1/credicontafi_clients';
+      var r=await fetch(base+'?select=id,data',{headers:onlineHeaders()});
+      if(r.ok){
+        var rows=await r.json();
+        for(var i=0;i<rows.length;i++){
+          var x=rows[i].data||rows[i],dni=String(x.dni||'').trim(),phone=String(x.phone||'').replace(/\\D/g,'');
+          if((dni===code||(digits&&phone===digits))&&String(x.name||'').trim().toLowerCase()===name)return x;
+        }
+      }
+    }
+  }catch(e){console.warn('Portal cliente online:',e)}
+  return null;
+}
 function setClientSession(x){try{localStorage.setItem(CLIENT_PORTAL_KEY,JSON.stringify(x))}catch(e){}}
 function clearClientSession(){try{localStorage.removeItem(CLIENT_PORTAL_KEY)}catch(e){}}
 
@@ -95,16 +120,12 @@ function clientPortal(){
       var code=String(document.getElementById('clientAccessCode').value||'').trim().toLowerCase();
       var name=String(document.getElementById('clientAccessName').value||'').trim().toLowerCase();
       var normalizedCode=code.replace(/\D/g,'');
-      var found=db.clients.find(function(x){
-        var dni=String(x.dni||'').trim().replace(/\D/g,'');
-        var phone=String(x.phone||'').trim().replace(/\D/g,'');
-        var fullName=String(x.name||'').trim().toLowerCase().replace(/\\s+/g,' ');
-        var typedName=name.trim().toLowerCase().replace(/\\s+/g,' ');
-        return (dni===normalizedCode||phone===normalizedCode) && (!typedName || fullName===typedName);
-      });
-      if(!found){toast('No encontramos un cliente con esos datos');return}
+      portalFindClient(code,name).then(function(found){
+      if(!found){toast('No encontramos un cliente con ese DNI o teléfono y nombre');return}
+      if(!db.clients.some(function(x){return x.id===found.id}))db.clients.push(found);
       setClientSession({clientId:found.id,at:new Date().toISOString()});
       clientPortal();
+    })
     };
     return;
   }
