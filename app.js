@@ -41,33 +41,48 @@ async function onlineLoad(){
   var c=onlineConfig();
   if(!c.enabled||!c.url||!c.anonKey)return null;
   try{
-    var r=await fetch(onlineUrl()+'?id=eq.main&select=id,data,updated_at',{headers:onlineHeaders()});
+    var r=await fetch(onlineUrl()+'?id=eq.main&select=id,data,updated_at',{headers:onlineHeaders(),cache:'no-store'});
     if(!r.ok)throw new Error('HTTP '+r.status);
     var rows=await r.json();
     ONLINE_SYNC.enabled=true;ONLINE_SYNC.ready=true;ONLINE_SYNC.lastError='';
     var remoteData=rows[0]&&rows[0].data?rows[0].data:null;
-    /* Nunca reemplazar los datos locales por un registro remoto vacío. */
-    if(remoteData&&typeof remoteData==='object'&&Object.keys(remoteData).length>0){
-      var meaningful=Array.isArray(remoteData.clients)||Array.isArray(remoteData.credits)||Array.isArray(remoteData.applications)||Array.isArray(remoteData.savingsAccounts)||remoteData.company;
-      return meaningful?remoteData:null;
-    }
-    return null;
+    if(!remoteData||typeof remoteData!=='object'||!Object.keys(remoteData).length)return null;
+    var localData=db, merged=clone(localData);
+    Object.keys(remoteData).forEach(function(k){
+      if(k==='company'&&remoteData.company&&typeof remoteData.company==='object'){
+        merged.company=Object.assign({},localData.company||{},remoteData.company); return;
+      }
+      if(Array.isArray(remoteData[k])){
+        var localArr=Array.isArray(localData[k])?localData[k]:[], remoteArr=remoteData[k], byId={};
+        localArr.forEach(function(x,i){if(x&&x.id!==undefined)byId[String(x.id)]={x:x,i:i}});
+        remoteArr.forEach(function(x){
+          if(!x)return;
+          var idv=x.id!==undefined?String(x.id):null;
+          if(idv!==null&&byId[idv])localArr[byId[idv].i]=Object.assign({},localArr[byId[idv].i],x);
+          else localArr.push(x);
+        });
+        merged[k]=localArr;
+      }else if(remoteData[k]!==undefined&&remoteData[k]!==null&&localData[k]===undefined)merged[k]=remoteData[k];
+    });
+    return merged;
   }catch(e){ONLINE_SYNC.lastError=e.message||'Error de conexión';return null}
 }
-var onlineSaveTimer=null;
+var onlineSaveTimernull;
 function onlineSave(){
   var c=onlineConfig();
   if(!c.enabled||!c.url||!c.anonKey)return;
   clearTimeout(onlineSaveTimer);
   onlineSaveTimer=setTimeout(async function(){
     try{
-      var payload={data:db,updated_at:new Date().toISOString()};
-      var r=await fetch(onlineUrl()+'?id=eq.main',{method:'PATCH',headers:onlineHeaders(),body:JSON.stringify(payload)});
-      if(!r.ok)throw new Error('HTTP '+r.status);
-      ONLINE_SYNC.ready=true;ONLINE_SYNC.lastError='';
-      updateOnlineStatus();
+      var payload={id:'main',data:db,updated_at:new Date().toISOString()};
+      var r=await fetch(onlineUrl()+'?id=eq.main',{method:'PATCH',headers:onlineHeaders(),body:JSON.stringify(payload),cache:'no-store'});
+      if(!r.ok){
+        var create=await fetch(onlineUrl(),{method:'POST',headers:Object.assign({},onlineHeaders(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(payload)});
+        if(!create.ok)throw new Error('HTTP '+r.status+' / alta '+create.status);
+      }
+      ONLINE_SYNC.ready=true;ONLINE_SYNC.lastError='';updateOnlineStatus();
     }catch(e){ONLINE_SYNC.lastError=e.message||'Error al guardar';updateOnlineStatus()}
-  },250);
+  },350);
 }
 function save(){localStorage.setItem(KEY,JSON.stringify(db));onlineSave()}
 function updateOnlineStatus(){var el=document.getElementById('onlineStatus');if(!el)return;var c=onlineConfig();if(!c.enabled){el.textContent='● Local';el.className='online-status local';return}if(ONLINE_SYNC.lastError){el.textContent='● Sin conexión';el.className='online-status error';return}if(ONLINE_SYNC.ready){el.textContent='● Online';el.className='online-status online';}else{el.textContent='● Conectando…';el.className='online-status pending'}}
