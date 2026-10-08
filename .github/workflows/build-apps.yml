@@ -16,7 +16,7 @@ jobs:
       - name: Instalar dependencias
         run: npm install
       - name: Compilar instalador Windows
-        run: npm run desktop:build
+        run: npm run desktop:build -- --publish never
       - name: Verificar instalador
         shell: pwsh
         run: |
@@ -38,6 +38,12 @@ jobs:
           node-version: 22
       - name: Instalar dependencias
         run: npm install
+      - name: Preparar archivos web para Android
+        shell: bash
+        run: |
+          rm -rf www
+          mkdir -p www
+          cp index.html cliente.html cliente.css cliente.js app.js styles.css online-config.js supabase-client-config.js logo.svg logo-credicontafi.svg manifest.webmanifest service-worker.js www/
       - name: Preparar Android
         run: npx cap add android
       - name: Sincronizar Capacitor
