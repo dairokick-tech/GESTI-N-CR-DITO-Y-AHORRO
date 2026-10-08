@@ -129,4 +129,118 @@ function creditos(el){
  el.innerHTML='<h2>💳 Mis créditos activos</h2>'+credits.map(c=>{const pays=paymentsFor(c.id),ins=installmentsFor(c.id),paid=pays.reduce((a,p)=>a+Number(p.amount||0),0),saldo=Math.max(0,Number(c.amount||0)-paid),quota=Number(c.installment_amount||c.estimated_payment||0);return `<div class="card section"><div style="display:flex;justify-content:space-between;gap:8px"><div><h2>${esc(c.file_no||'Crédito activo')}</h2><p class="muted">${esc(c.product_name||'Producto de crédito')}</p></div><span class="badge ok">${esc(c.status||'VIGENTE')}</span></div><div class="grid"><div><span class="muted">Monto original</span><br><b>${money(c.amount)}</b></div><div><span class="muted">Cuota</span><br><b>${quota?money(quota):'No registrada'}</b></div><div><span class="muted">Pagado</span><br><b>${money(paid)}</b></div><div><span class="muted">Saldo</span><br><b>${money(saldo)}</b></div></div><h3>Cronograma</h3><div class="tablewrap"><table class="table"><thead><tr><th>N.º</th><th>Vencimiento</th><th>Cuota</th><th>Estado</th></tr></thead><tbody>${ins.map(i=>`<tr><td>${esc(i.installment_number||i.number||'—')}</td><td>${esc(i.due_date||i.date||'—')}</td><td>${money(i.installment_amount||i.amount)}</td><td>${esc(i.status||'PENDIENTE')}</td></tr>`).join('')||'<tr><td colspan="4">No hay cronograma registrado.</td></tr>'}</tbody></table></div><h3>Pagos registrados</h3><div class="tablewrap"><table class="table"><thead><tr><th>Fecha</th><th>Monto</th><th>Método</th><th>Referencia</th></tr></thead><tbody>${pays.map(p=>`<tr><td>${esc(p.date||p.created_at||'')}</td><td>${money(p.amount)}</td><td>${esc(p.method||'—')}</td><td>${esc(p.reference||'—')}</td></tr>`).join('')||'<tr><td colspan="4">Aún no hay pagos registrados.</td></tr>'}</tbody></table></div></div>`}).join('');
 }
 async function logout(){await supabase.auth.signOut();state={user:null,client:null,credits:[],payments:[],installments:[],products:[],documents:[],view:'inicio'};loginView()}
-(async()=>{if(!supabase){document.getElementById('app').innerHTML='<div class="login"><div class="login-card"><h2>Supabase no configurado</h2><p>Falta la configuración del Portal Cliente.</p></div></div>';return}const {data:{session}}=await supabase.auth.getSession();if(session)await boot();else loginView();supabase.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT')loginView()})})();
+
+// ===== MODO SIN INTERNET =====
+// El modo offline usa los datos guardados localmente por el sistema en este mismo dispositivo.
+// Cuando vuelve Internet, el portal intenta usar Supabase normalmente.
+function offlineDb(){
+  try{
+    const raw=localStorage.getItem('credicontafi_operativo_v1');
+    if(!raw)return null;
+    const db=JSON.parse(raw);
+    if(!db || typeof db!=='object')return null;
+    if(!Array.isArray(db.clients))db.clients=[];
+    if(!Array.isArray(db.credits))db.credits=[];
+    if(!Array.isArray(db.payments))db.payments=[];
+    if(!Array.isArray(db.savingsAccounts))db.savingsAccounts=[];
+    return db;
+  }catch(e){return null}
+}
+function offlineLoginView(){
+  document.getElementById('app').innerHTML=`<div class="login"><div class="login-card">
+    <div style="text-align:center;margin-bottom:16px"><div style="font-size:42px">📱</div>
+    <h1 style="margin-bottom:4px">Portal Cliente</h1><p class="muted">Modo sin Internet</p></div>
+    <div class="notice">Puedes consultar los datos guardados en este dispositivo. Al recuperar Internet, el sistema volverá a Supabase automáticamente.</div>
+    <form id="offlineForm" style="margin-top:15px">
+      <div class="field"><label>DNI o teléfono</label><input name="code" inputmode="numeric" autocomplete="off" required></div>
+      <div class="field" style="margin-top:10px"><label>Nombres y apellidos</label><input name="name" autocomplete="name" required></div>
+      <button class="btn primary" style="width:100%;margin-top:14px">Ingresar sin Internet</button>
+    </form>
+    <button class="btn" id="retryOnline" style="width:100%;margin-top:9px">🔄 Intentar conexión a Internet</button>
+    <div id="offlineMsg" class="notice hidden"></div>
+  </div></div>`;
+  document.getElementById('offlineForm').onsubmit=function(e){
+    e.preventDefault();
+    const f=Object.fromEntries(new FormData(e.target));
+    const code=String(f.code||'').trim();
+    const digits=code.replace(/\\D/g,'');
+    const name=String(f.name||'').trim().toLowerCase();
+    const db=offlineDb();
+    const found=db&&db.clients.find(c=>{
+      const dni=String(c.dni||'').trim();
+      const phone=String(c.phone||'').replace(/\\D/g,'');
+      return (dni===code || (digits&&phone===digits)) &&
+        String(c.name||'').trim().toLowerCase()===name;
+    });
+    const m=document.getElementById('offlineMsg');
+    m.classList.remove('hidden');
+    if(!found){m.textContent='No encontramos ese cliente en los datos guardados de este dispositivo.';return}
+    offlineRender(db,found);
+  };
+  document.getElementById('retryOnline').onclick=async function(){
+    this.disabled=true;this.textContent='Conectando…';
+    if(window.supabase && SUP.url && SUP.publishableKey){
+      try{
+        const {data:{session}}=await supabase.auth.getSession();
+        if(session){await boot();return}
+      }catch(e){}
+    }
+    this.disabled=false;this.textContent='🔄 Intentar conexión a Internet';
+    const m=document.getElementById('offlineMsg');m.classList.remove('hidden');m.textContent='Todavía no hay conexión. Puedes continuar sin Internet.';
+  };
+}
+function offlineRender(client){
+  const db=offlineDb()||{};
+  const credits=(db.credits||[]).filter(x=>String(x.clientId)===String(client.id));
+  const payments=db.payments||[];
+  const savings=(db.savingsAccounts||[]).filter(x=>String(x.clientId)===String(client.id));
+  const paid=credits.reduce((sum,c)=>sum+payments.filter(p=>String(p.creditId||p.credit_id)===String(c.id)).reduce((a,p)=>a+Number(p.amount||0),0),0);
+  const original=credits.reduce((a,c)=>a+Number(c.amount||0),0);
+  const savingTotal=savings.reduce((a,s)=>a+Number(s.balance||s.currentBalance||0),0);
+  document.getElementById('app').innerHTML=`<header class="top"><div class="topin">
+    <div class="brand"><img src="logo.svg"><span>CREDICONTAFI</span></div>
+    <div class="user">🟠 Sin Internet · <button class="btn" id="offExit">Salir</button></div>
+  </div></header>
+  <main><div class="hero"><h1>Hola, ${esc(client.name||'Cliente')} 👋</h1>
+    <p>Consulta local de tus productos. Los datos pueden estar desactualizados hasta recuperar Internet.</p></div>
+    <div class="notice">🟠 <b>Modo sin Internet.</b> Esta información proviene del almacenamiento local de este dispositivo.</div>
+    <div class="grid section">
+      <div class="card"><div class="muted">Créditos</div><div class="metric">${credits.length}</div></div>
+      <div class="card"><div class="muted">Monto original</div><div class="metric">${money(original)}</div></div>
+      <div class="card"><div class="muted">Pagado</div><div class="metric">${money(paid)}</div></div>
+      <div class="card"><div class="muted">Ahorros</div><div class="metric">${money(savingTotal)}</div></div>
+    </div>
+    <div class="section"><div class="card"><h2>💳 Mis créditos</h2>${credits.length?credits.map(c=>{
+      const ps=payments.filter(p=>String(p.creditId||p.credit_id)===String(c.id));
+      const p=ps.reduce((a,x)=>a+Number(x.amount||0),0);
+      return `<div class="card" style="margin-top:10px;background:#f8fafc">
+        <b>${esc(c.fileNo||c.file_no||c.id||'Crédito')}</b>
+        <p class="muted">${esc(c.productName||c.product_name||'Crédito')}</p>
+        <div class="grid"><div><span class="muted">Monto</span><br><b>${money(c.amount)}</b></div>
+        <div><span class="muted">Pagado</span><br><b>${money(p)}</b></div>
+        <div><span class="muted">Saldo</span><br><b>${money(Math.max(0,Number(c.amount||0)-p))}</b></div>
+        <div><span class="muted">Estado</span><br><b>${esc(c.status||'Vigente')}</b></div></div>
+      </div>`;
+    }).join(''):'<div class="empty">No hay créditos locales registrados para este cliente.</div>'}</div></div>
+    <div class="section"><div class="card"><h2>🏦 Mis ahorros</h2>${savings.length?savings.map(s=>`<div style="padding:10px 0;border-bottom:1px solid var(--line)"><b>${esc(s.code||s.id||'Cuenta')}</b> · ${esc(s.status||'Activo')}<div class="metric">${money(s.balance||s.currentBalance||0)}</div></div>`).join(''):'<div class="empty">No hay cuentas de ahorro locales registradas.</div>'}</div></div>
+  </main></div>`;
+  document.getElementById('offExit').onclick=offlineLoginView;
+}
+async function startClientPortal(){
+  // Si no está disponible el cliente Supabase, entrar directamente al modo local.
+  if(!supabase){offlineLoginView();return}
+  try{
+    const result=await Promise.race([
+      supabase.auth.getSession(),
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),5000))
+    ]);
+    const session=result?.data?.session;
+    if(session){await boot();return}
+    loginView();
+  }catch(e){
+    offlineLoginView();
+  }
+}
+window.addEventListener('offline',function(){ if(!state.user) offlineLoginView(); });
+window.addEventListener('online',function(){ if(!state.user) startClientPortal(); });
+startClientPortal();
