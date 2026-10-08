@@ -1,31 +1,66 @@
 name: CREDICONTAFI - aplicaciones
+
 on:
   workflow_dispatch:
   push:
     branches: ["main"]
+
 jobs:
   windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: {node-version: 22, cache: npm}
-      - run: npm install
-      - run: npm run desktop:build
+        with:
+          node-version: 22
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Compilar instalador Windows
+        run: npm run desktop:build
+      - name: Verificar instalador
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem dist -Filter *.exe
+          if ($files.Count -lt 1) { throw "No se generó el instalador EXE." }
+          $files | Format-Table Name,Length
       - uses: actions/upload-artifact@v4
-        with: {name: CREDICONTAFI-Windows, path: dist/*.exe}
+        with:
+          name: CREDICONTAFI-Windows
+          path: dist/*.exe
+          if-no-files-found: error
+
   android:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: {node-version: 22, cache: npm}
-      - run: npm install
-      - run: npx cap add android
-      - run: npx cap sync android
+        with:
+          node-version: 22
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Preparar Android
+        run: npx cap add android
+      - name: Sincronizar Capacitor
+        run: npx cap sync android
       - uses: actions/setup-java@v4
-        with: {distribution: temurin, java-version: "21"}
+        with:
+          distribution: temurin
+          java-version: "21"
       - uses: android-actions/setup-android@v3
-      - run: cd android && chmod +x gradlew && ./gradlew assembleDebug
+      - name: Compilar APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - name: Verificar APK
+        shell: bash
+        run: |
+          test -n "$(find android/app/build/outputs/apk/debug -name '*.apk' -print -quit)" || { echo "No se generó APK."; exit 1; }
+          find android/app/build/outputs/apk/debug -name '*.apk' -ls
       - uses: actions/upload-artifact@v4
-        with: {name: CREDICONTAFI-Android, path: android/app/build/outputs/apk/debug/*.apk}
+        with:
+          name: CREDICONTAFI-Android
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
