@@ -45,7 +45,13 @@ async function onlineLoad(){
     if(!r.ok)throw new Error('HTTP '+r.status);
     var rows=await r.json();
     ONLINE_SYNC.enabled=true;ONLINE_SYNC.ready=true;ONLINE_SYNC.lastError='';
-    return rows[0]&&rows[0].data?rows[0].data:null;
+    var remoteData=rows[0]&&rows[0].data?rows[0].data:null;
+    /* Nunca reemplazar los datos locales por un registro remoto vacío. */
+    if(remoteData&&typeof remoteData==='object'&&Object.keys(remoteData).length>0){
+      var meaningful=Array.isArray(remoteData.clients)||Array.isArray(remoteData.credits)||Array.isArray(remoteData.applications)||Array.isArray(remoteData.savingsAccounts)||remoteData.company;
+      return meaningful?remoteData:null;
+    }
+    return null;
   }catch(e){ONLINE_SYNC.lastError=e.message||'Error de conexión';return null}
 }
 var onlineSaveTimer=null;
