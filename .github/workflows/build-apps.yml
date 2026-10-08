@@ -13,9 +13,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
       - name: Instalar dependencias
-        run: npm ci
+        run: npm install
       - name: Compilar instalador Windows
         run: npm run desktop:build
       - name: Verificar instalador
@@ -37,9 +36,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
       - name: Instalar dependencias
-        run: npm ci
+        run: npm install
       - name: Preparar Android
         run: npx cap add android
       - name: Sincronizar Capacitor
