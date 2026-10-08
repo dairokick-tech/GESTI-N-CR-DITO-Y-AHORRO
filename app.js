@@ -94,9 +94,13 @@ function clientPortal(){
       e.preventDefault();
       var code=String(document.getElementById('clientAccessCode').value||'').trim().toLowerCase();
       var name=String(document.getElementById('clientAccessName').value||'').trim().toLowerCase();
+      var normalizedCode=code.replace(/\D/g,'');
       var found=db.clients.find(function(x){
-        var dni=String(x.dni||'').trim().toLowerCase(),phone=String(x.phone||'').replace(/\D/g,'');
-        return (dni===code||phone===code.replace(/\D/g,'')) && String(x.name||'').trim().toLowerCase()===name;
+        var dni=String(x.dni||'').trim().replace(/\D/g,'');
+        var phone=String(x.phone||'').trim().replace(/\D/g,'');
+        var fullName=String(x.name||'').trim().toLowerCase().replace(/\\s+/g,' ');
+        var typedName=name.trim().toLowerCase().replace(/\\s+/g,' ');
+        return (dni===normalizedCode||phone===normalizedCode) && (!typedName || fullName===typedName);
       });
       if(!found){toast('No encontramos un cliente con esos datos');return}
       setClientSession({clientId:found.id,at:new Date().toISOString()});
